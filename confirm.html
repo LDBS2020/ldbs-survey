@@ -10,7 +10,7 @@ canvas{width:100%;background:#fff;border:1px solid #b8c2cc;border-radius:6px;tou
 <label>Your full name</label><input id="nm" type="text"><label>Draw your signature below</label><canvas id="cv" width="600" height="200"></canvas><button class="s" type="button" onclick="clr()">Clear signature</button>
 <label class="ck"><input type="checkbox" id="ag"><span id="cs"></span></label><button id="cb" type="button">Confirm</button><div id="m"></div></div></main>
 <script>
-const API="__API_URL__",T=new URLSearchParams(location.search).get("t"),$=i=>document.getElementById(i);
+const API="https://script.google.com/macros/s/AKfycbxl1lpWQdcXdixrgxFyZscqg0V-m2U_gGchoqea-xc0nuADEg7Nf3TxgnMjiMZVXVOfEA/exec",T=new URLSearchParams(location.search).get("t"),$=i=>document.getElementById(i);
 const call=async o=>{o.ct=T;return(await fetch(API,{method:"POST",body:JSON.stringify(o)})).json()};
 let POS=null,drawn=false,dn=false;navigator.geolocation&&navigator.geolocation.getCurrentPosition(p=>POS=p.coords,()=>{},{enableHighAccuracy:true});
 const cv=$("cv"),g=cv.getContext("2d");g.lineWidth=3;g.lineCap="round";
