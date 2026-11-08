@@ -21,8 +21,9 @@ button.s{background:#6b7785}.note{font-size:12px;color:#6b7785;padding:0 14px 10
 <main><div id="login"><p>Sign in with your company Google account.</p><div id="gbtn"></div></div>
 <div id="app" hidden><form id="form"></form><div id="msg"></div>
 <button type="button" class="s" onclick="saveDraft(1)">Save draft on phone</button>
-<button type="button" onclick="submitSurvey()">Submit survey</button><button type="button" class="s" onclick="showDiagram()">Preview line diagram</button><div id="conf" hidden><button type="button" onclick="sendConf()">Send to customer for confirmation</button></div></div></main>
+<button type="button" onclick="submitSurvey()">Submit survey</button><button type="button" class="s" onclick="myList()">My surveys</button><button type="button" class="s" onclick="showDiagram()">Preview line diagram</button><div id="conf" hidden><button type="button" onclick="sendConf()">Send to customer for confirmation</button></div></div></main>
 <div id="dg" hidden style="position:fixed;inset:0;background:#fff;z-index:8;overflow:auto;padding:8px"><button class="s" type="button" onclick="document.getElementById('dg').hidden=true">Close</button><div id="dgs"></div></div>
+<div id="ml" hidden style="position:fixed;inset:0;background:#fff;z-index:8;overflow:auto;padding:8px"><button class="s" type="button" onclick="document.getElementById('ml').hidden=true">Close</button><div id="mls"></div></div>
 <div id="cam" hidden><div id="ct"></div><video id="v" autoplay playsinline muted></video><div><button id="shot" type="button" onclick="shoot()">Capture</button><button type="button" class="s" onclick="closeCam()">Cancel</button></div></div>
 <script>
 const CFG={CLIENT_ID:"916191675019-ak0ahge3pospp19hrc108ustkggp22m9.apps.googleusercontent.com",API_URL:"https://script.google.com/macros/s/AKfycbw0TiDJk1Cp64-sP3_yF9y8Y4Aa7YaCdCUzx1uRfYbY5kR9owGEbw7EzDSvS6I85SQizw/exec"};
@@ -64,7 +65,7 @@ try{const r=await api({data:data(),status:"Submitted"});
 if(r.ok){localStorage.removeItem("ldbs_sid");SID="";LAST=r.survey_id;$("conf").hidden=false;$("msg").textContent="Submitted. Survey ID: "+r.survey_id;localStorage.removeItem("ldbs_draft")}else $("msg").textContent="Error: "+r.error}
 catch(e){$("msg").textContent="Network error. Your draft is kept; try again."}}
 async function sendConf(){const em=el("customer_email")?el("customer_email").value:"";if(!confirm("Send the confirmation link to "+em+" ?\n\nCheck this is the CUSTOMER's email, not yours."))return;$("msg").textContent="Sending...";const r=await api({action:"sendConfirmation",survey_id:LAST});$("msg").textContent=r.ok?r.message:"Error: "+r.error}
-const E=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const E=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const V=c=>(el(c)&&el(c).value.trim())||"-";
 function diagram(){
 const bx=(x,y,w,h,f,...L)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="${f}" stroke="#1f4e78" stroke-width="2"/>`+L.filter(Boolean).map((s,i,a)=>`<text x="${x+w/2}" y="${y+h/2-(a.length-1)*9+5+i*18}" text-anchor="middle" font-size="${i?12:14}" ${i?"":'font-weight="bold" '}fill="#10243a">${E(s)}</text>`).join("");
@@ -83,6 +84,10 @@ ${bx(800,230,210,55,"#e6e6e6","LIGHTNING ARRESTOR")}${ln(905,285,905,340,V("ligh
 function showDiagram(){calc();$("dgs").innerHTML=diagram();$("dg").hidden=false}
 async function uploadDiagram(){const img=new Image();img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(diagram());await img.decode();const c=document.createElement("canvas");c.width=2120;c.height=880;const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(img,0,0,c.width,c.height);
 const r=await api({action:"diagram",survey_id:SID,image:c.toDataURL("image/png").split(",")[1]});if(!r.ok)throw new Error(r.error)}
+async function myList(){$("ml").hidden=false;$("mls").textContent="Loading...";const r=await api({action:"list"});if(!r.ok){$("mls").textContent=r.error;return}
+$("mls").innerHTML=r.items.map(x=>`<div class="f" style="border-bottom:1px solid #d5dce4"><b>${E(x.name||"(no name)")}</b> <small>${E(x.id)}</small><br>Status: ${E(x.status)}${x.link?" | Link: "+E(x.link):""}<br>${E(x.email)}<br>`+(x.status=="Submitted"?`<button type="button" onclick="resend('${E(x.id)}','${E(x.email)}')">Send / resend link</button><button type="button" class="s" onclick="cancelLink('${E(x.id)}')">Cancel link</button>`:"")+`</div>`).join("")||"No surveys yet."}
+async function resend(id,em){const n=prompt("Customer email to send the link to:",em);if(n===null)return;const r=await api({action:"sendConfirmation",survey_id:id,email:n.trim()});alert(r.ok?r.message:"Error: "+r.error);myList()}
+async function cancelLink(id){if(!confirm("Cancel the active link for "+id+"?"))return;const r=await api({action:"cancelConfirmation",survey_id:id});alert(r.ok?r.message:"Error: "+r.error);myList()}
 async function api(o){o.token=token;return (await fetch(CFG.API_URL,{method:"POST",body:JSON.stringify(o)})).json()}
 const ll=s=>{const m=/(-?\d+\.\d+),\s*(-?\d+\.\d+)/.exec(s||"");return m?[+m[1],+m[2]]:null};
 async function openCam(c){CUR=F.find(x=>x.col==c);
