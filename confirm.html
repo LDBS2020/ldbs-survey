@@ -5,7 +5,7 @@ input[type=text],input:not([type]){width:100%;box-sizing:border-box;padding:10px
 canvas{width:100%;background:#fff;border:1px solid #b8c2cc;border-radius:6px;touch-action:none}button{padding:12px 16px;font-size:16px;border:0;border-radius:6px;background:#1f4e78;color:#fff;margin:6px 4px 6px 0}button.s{background:#6b7785}
 .ck{display:flex;gap:8px;margin:12px 0;font-size:14px}[hidden]{display:none!important}#m{font-weight:bold;padding:6px 0}</style></head><body>
 <header>LDBS India - Confirm your solar requirements</header><main><div id="st">Loading...</div>
-<div id="box" hidden><table id="tb"></table><div id="ph"></div><button id="ob" type="button">Send verification code to <span id="em"></span></button>
+<div id="box" hidden><table id="tb"></table><div id="dgm"></div><div id="ph"></div><button id="ob" type="button">Send verification code to <span id="em"></span></button>
 <label>6-digit code from the email</label><input id="otp" inputmode="numeric" maxlength="6">
 <label>Your full name</label><input id="nm" type="text"><label>Draw your signature below</label><canvas id="cv" width="600" height="200"></canvas><button class="s" type="button" onclick="clr()">Clear signature</button>
 <label class="ck"><input type="checkbox" id="ag"><span id="cs"></span></label><button id="cb" type="button">Confirm</button><div id="m"></div></div></main>
@@ -21,6 +21,7 @@ function clr(){g.clearRect(0,0,cv.width,cv.height);drawn=false}
 (async()=>{if(!T)return $("st").textContent="Invalid link.";
 try{const r=await call({action:"c_get"});if(!r.ok)return $("st").textContent=r.error;if(r.done)return $("st").textContent=r.message;
 r.items.forEach(x=>{const tr=$("tb").insertRow();tr.insertCell().textContent=x[0];tr.insertCell().textContent=x[1]});
+if(r.diagram){const i=new Image();i.src=r.diagram;i.style.width="100%";$("dgm").appendChild(i)}
 (r.photos||[]).forEach(p=>{const d=document.createElement("div");d.style.cssText="display:inline-block;width:48%;margin:1%;font-size:12px;vertical-align:top";if(p.img){const i=new Image();i.src=p.img;i.style.width="100%";d.appendChild(i)}d.appendChild(document.createTextNode(p.label));$("ph").appendChild(d)});$("em").textContent=r.email;$("cs").textContent=r.consent;$("st").hidden=false;$("st").textContent="Please check the details below.";$("box").hidden=false}
 catch(e){$("st").textContent="Could not load. Check your internet and reopen the link."}})();
 $("ob").onclick=async()=>{$("m").textContent="Sending code...";const r=await call({action:"c_otp"});$("m").textContent=r.ok?"Code sent. Check your email (also spam).":r.error};
