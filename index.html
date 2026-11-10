@@ -47,7 +47,7 @@ function calc(){const set=(c,v)=>{const e=el(c);if(e)e.value=v};
 set("average_daily_consumption",(num("average_monthly_consumption")/30).toFixed(1));
 set("total_dc_capacity",(num("number_of_panels")*num("panel_wattage")/1000).toFixed(2));
 set("total_estimated_dc_cable",num("panel_to_dcdb")+num("dcdb_to_inverter"));
-set("total_estimated_ac_cable",num("inverter_to_acdb_cable")+num("acdb_to_generation_meter")+num("generation_meter_to_net_meter"));
+set("total_estimated_ac_cable",num("inverter_to_acdb_cable")+num("acdb_to_generation_meter")+num("generation_meter_to_net_meter")+num("panel_earth_to_dcdb_earth")+num("dcdb_earth_to_earth_pit")+num("acdb_earth_to_earth_pit")+num("lightning_arrestor_earth_to_earth_pit"));
 const w=num("panel_wattage");set("estimated_panel_count",w?Math.ceil(num("recommended_solar_capacity")*1000/w):"")}
 function gps(c){navigator.geolocation.getCurrentPosition(p=>{el(c).value=`${p.coords.latitude.toFixed(6)},${p.coords.longitude.toFixed(6)} (±${Math.round(p.coords.accuracy)}m)`;saveDraft()},
 e=>alert("Location blocked. Allow location for this site."),{enableHighAccuracy:true,timeout:20000})}
